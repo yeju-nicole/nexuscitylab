@@ -11,6 +11,13 @@ from content import T, LANGS, CATS, TITLES, ORGS, PARTNER_FILES, AREA_IDS, AREA_
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = HERE
+
+# ───────── 사이트 주소·검색 설정 ─────────
+# 도메인을 연결하면 아래 한 줄만 'https://nexuscitylab.kr' 처럼 바꾸고 다시 빌드하세요.
+SITE = 'https://yeju-nicole.github.io/nexuscitylab'
+CUSTOM_DOMAIN = ''          # 예: 'nexuscitylab.kr' → GitHub Pages용 CNAME 파일을 만듭니다
+NAVER_VERIFICATION = ''     # 네이버 서치어드바이저 사이트 소유확인 코드 (meta content 값)
+GOOGLE_VERIFICATION = ''    # Google Search Console 소유확인 코드 (meta content 값)
 RECORDS = json.load(open(os.path.join(HERE, 'records.json'), encoding='utf-8'))
 esc = html.escape
 
@@ -201,9 +208,44 @@ FONTS = {
 }
 
 
+def abs_url(name, lang):
+    h = href(name, lang)
+    return SITE + '/' + ('' if h == 'index.html' else h)
+
+
+OG_LOCALE = {'ko': 'ko_KR', 'en': 'en_US', 'ja': 'ja_JP'}
+
+
+def org_jsonld(L, lang):
+    C = T['ko']['company']
+    data = {
+        '@context': 'https://schema.org', '@type': 'Organization',
+        'name': '주식회사 넥서스도시랩', 'alternateName': ['넥서스도시랩', 'NEXUS CITY LAB', 'Nexus City Lab', 'NEXUS CITY LAB Co., Ltd.'],
+        'url': SITE + '/', 'logo': SITE + '/logo.png', 'telephone': '+82-31-427-0937', 'foundingDate': '2018-11-26',
+        'address': {'@type': 'PostalAddress', 'streetAddress': '엘에스로116번길 91, 1019호', 'addressLocality': '안양시 동안구',
+                    'addressRegion': '경기도', 'addressCountry': 'KR'},
+        'description': L['home_desc'],
+    }
+    return '<script type="application/ld+json">' + json.dumps(data, ensure_ascii=False) + '</script>'
+
+
 def page(L, lang, name, title, desc, body, current=-1, home=False):
     full_title = f'{title} | {L["brand"]}' if title else L['home_title']
-    alts = ''.join(f'<link rel="alternate" hreflang="{o}" href="{href(name, o)}">' for o in LANGS)
+    if name == '404':
+        alts = '<meta name="robots" content="noindex">'
+    else:
+        alts = f'<link rel="canonical" href="{abs_url(name, lang)}">\n'
+        alts += ''.join(f'<link rel="alternate" hreflang="{o}" href="{abs_url(name, o)}">' for o in LANGS)
+        alts += f'<link rel="alternate" hreflang="x-default" href="{abs_url(name, "ko")}">\n'
+        alts += f'<meta property="og:url" content="{abs_url(name, lang)}">\n'
+    alts += f'<meta property="og:image" content="{SITE}/og-image.png">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'
+    alts += f'<meta property="og:locale" content="{OG_LOCALE[lang]}">\n<meta name="twitter:card" content="summary_large_image">'
+    if NAVER_VERIFICATION:
+        alts += f'\n<meta name="naver-site-verification" content="{NAVER_VERIFICATION}">'
+    if GOOGLE_VERIFICATION:
+        alts += f'\n<meta name="google-site-verification" content="{GOOGLE_VERIFICATION}">'
+    if name == 'index':
+        alts += '\n' + org_jsonld(L, lang)
     doc = f'''<!DOCTYPE html>
 <html lang="{L['html_lang']}">
 <head>
@@ -536,4 +578,18 @@ if __name__ == '__main__':
                   build_history, build_records, build_contact, build_404]:
             f(L, lang)
     open(os.path.join(OUT, '.nojekyll'), 'w').close()
+    # 검색엔진용 파일
+    open(os.path.join(OUT, 'robots.txt'), 'w').write(f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')
+    urls = []
+    for name in PAGES:
+        if name == '404':
+            continue
+        for lang in LANGS:
+            links = ''.join(f'<xhtml:link rel="alternate" hreflang="{o}" href="{abs_url(name, o)}"/>' for o in LANGS)
+            urls.append(f'<url><loc>{abs_url(name, lang)}</loc>{links}</url>')
+    open(os.path.join(OUT, 'sitemap.xml'), 'w').write(
+        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+        'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' + '\n'.join(urls) + '\n</urlset>\n')
+    if CUSTOM_DOMAIN:
+        open(os.path.join(OUT, 'CNAME'), 'w').write(CUSTOM_DOMAIN + '\n')
     print('done:', len(LANGS) * len(PAGES), 'pages')
