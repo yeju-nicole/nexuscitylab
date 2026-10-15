@@ -38,7 +38,7 @@
     menuBtn.addEventListener('click', function () {
       var open = body.classList.toggle('nav-open');
       menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      menuBtn.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+      menuBtn.setAttribute('aria-label', open ? (menuBtn.dataset.labelClose || '메뉴 닫기') : (menuBtn.dataset.labelOpen || '메뉴 열기'));
     });
     document.querySelectorAll('.drawer a').forEach(function (a) {
       a.addEventListener('click', function () { body.classList.remove('nav-open'); });

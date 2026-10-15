@@ -2,6 +2,14 @@
 
 주식회사 넥서스도시랩 공식 홈페이지 (정적 웹사이트, GitHub Pages로 운영)
 
+한국어·English·日本語 3개 언어. 각 페이지 오른쪽 위 KO / EN / JA 버튼으로 전환합니다.
+
+| 언어 | 파일 이름 | 예시 |
+|---|---|---|
+| 한국어 | `about.html` | `/nexuscitylab/about.html` |
+| English | `about-en.html` | `/nexuscitylab/about-en.html` |
+| 日本語 | `about-ja.html` | `/nexuscitylab/about-ja.html` |
+
 ## 페이지 구성
 
 | 메뉴 | 파일 |
@@ -13,7 +21,7 @@
 | 실적 · 41건 (분야·연도·검색 필터) | `records.html` |
 | 문의 · 오시는 길 / 과업 문의 | `contact.html` |
 
-`assets/` 폴더에 CSS, JS, 로고, 협력기관 로고가 있습니다.
+디자인(`style.css`), 동작(`main.js`), 로고(`*.svg`), 협력기관 로고(`partner*.png`)는 모두 저장소 맨 바깥에 있습니다.
 
 ## 1. GitHub Pages로 공개하기 (처음 한 번)
 
@@ -47,8 +55,8 @@
 
 ## 3. 내용 수정
 
-- 문구 몇 개만 바꿀 때: GitHub에서 해당 `.html` 파일 열기 → 연필 아이콘 → 수정 → Commit
-- 메뉴·푸터처럼 모든 페이지에 공통인 부분이나 실적 목록을 바꿀 때: `_build/build.py`(내용) 또는 `_build/records.json`(실적)을 고친 뒤 `python3 _build/build.py`를 실행하면 모든 페이지가 다시 만들어집니다.
+- 문구 몇 개만 바꿀 때: GitHub에서 해당 `.html` 파일 열기 → 연필 아이콘 → 수정 → Commit. 영어·일본어 파일(`-en`, `-ja`)도 같은 방식입니다.
+- 여러 페이지에 걸친 수정이나 실적 추가: `content.py`(3개 언어 문구) 또는 `records.json`(실적)을 고친 뒤 `python3 build.py`를 실행하면 30개 페이지가 모두 다시 만들어집니다. 실적을 추가하면 `content.py`의 TITLES·ORGS에 영어·일본어 번역도 함께 넣어야 합니다.
 
 ## 아직 비어 있는 정보
 
